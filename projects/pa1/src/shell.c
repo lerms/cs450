@@ -249,7 +249,8 @@ int peek(char **ps, char *es, char *toks) {
 struct cmd *parseline(char**, char*);
 struct cmd *parsepipe(char**, char*);
 struct cmd *parseexec(char**, char*);
-struct cmd *parseparens(char **, char *);
+struct cmd* parseredirs(struct cmd *, char**, char*);
+struct cmd *parseparens(char**, char *, char**);
 
 // make a copy of the characters in the input buffer, starting from s through es.
 // null-terminate the copy to make it a string.
@@ -275,24 +276,66 @@ struct cmd* parsecmd(char *s) {
   return cmd;
 }
 
+struct ll {
+  struct cmd *head;
+  struct ll *next;
+};
+
 struct cmd* parseline(char **ps, char *es) {
   struct cmd *cmd;
   cmd = parsepipe(ps, es);
   if (peek(ps, es, ";")) {
     gettoken(ps, es, 0, 0);
-    if (peek(ps, es, "(")) {
-    // char *open;
-    // open = strchr(*ps, '(');
-    // if(open) {
-      // gettoken(open, gettoken())
-
-      cmd = listcmd(parseline(ps, es), cmd);
+    char *openparens;
+    if ((openparens = strchr(*ps, '('))) {
+      char *prestr = mkcopy(*ps, openparens);
+      char *closingparens;
+      struct cmd *parenscmd = parseparens(&openparens, es, &closingparens);
+      // char *prestr;
+      // int front = openparens - *ps;
+      // int len = strlen(*ps);
+      // memmove((*ps)+front , (*ps) + front + len, len - (int)(closingparens - openparens) + 1);
+      // char *prestr = mkcopy(*ps, openparens);
+      printf("hey man {%s}\n", prestr);
+      // printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\nopenparens val:address {{%s : %p}}\nps val:address {{%s : %p}}\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n", openparens, &openparens, *ps, &(*ps));
+      struct cmd *postparens = parseline(&closingparens, es);
+      if (*ps != openparens) {
+        struct cmd *preparens = parseline(ps, openparens);
+        cmd = listcmd(parenscmd, listcmd(listcmd(cmd, preparens), postparens));
+      } else {
+        cmd = listcmd(parenscmd, listcmd(cmd, postparens));
+      }
     } else {
       cmd = listcmd(cmd, parseline(ps, es));
     }
   }
   return cmd;
 }
+
+//parse everything between parens, including nested parens.
+struct cmd* parseparens(char **ps, char *es, char **closingparens) {
+  struct cmd *cmd;
+
+  if (!peek(ps, es, "(")) {
+    printf("not a parenthesized command.");
+  }
+
+  gettoken(ps, es, 0, 0);
+  cmd = parseline(ps, es);
+
+  if (!peek(ps, es, ")")) {
+    printf("no closing parenthesis");
+  }
+
+  if (closingparens) {
+    *closingparens = *ps;
+  }
+
+  gettoken(ps, es, 0, 0);
+  cmd = parseredirs(cmd, ps, es);
+  return cmd;
+}
+
 
 struct cmd* parsepipe(char **ps, char *es) {
   struct cmd *cmd;
@@ -327,25 +370,6 @@ struct cmd* parseredirs(struct cmd *cmd, char **ps, char *es) {
   return cmd;
 }
 
-struct cmd* parseparens(char **ps, char *es) {
-  struct cmd *cmd;
-
-  if (!peek(ps, es, "(")) {
-    printf("not a parenthesized command.");
-  }
-
-  gettoken(ps, es, 0, 0);
-  cmd = parseline(ps, es);
-
-  if (!peek(ps, es, ")")) {
-    printf("no closing parenthesis");
-  }
-
-  gettoken(ps, es, 0, 0);
-  cmd = parseredirs(cmd, ps, es);
-  return cmd;
-}
-
 struct cmd* parseexec(char **ps, char *es) {
   char *q, *eq;
   int tok, argc;
@@ -353,7 +377,7 @@ struct cmd* parseexec(char **ps, char *es) {
   struct cmd *ret;
   
   if (peek(ps, es, "(")) {
-     return parseparens(ps, es);
+     return parseparens(ps, es, 0);
   }
 
   ret = execcmd();
@@ -362,13 +386,17 @@ struct cmd* parseexec(char **ps, char *es) {
   argc = 0;
   ret = parseredirs(ret, ps, es);
   while (!peek(ps, es, "|);")) {
-    if ((tok=gettoken(ps, es, &q, &eq)) == 0)
+    if ((tok=gettoken(ps, es, &q, &eq)) == 0) {
+      // printf("Inside parseexec(ps,es), int tok returned from gettoken is {{%c}}\n", tok);
       break;
+    }
     if (tok != 'a') {
       fprintf(stderr, "syntax error\n");
       exit(-1);
     }
     cmd->argv[argc] = mkcopy(q, eq);
+    // printf("Inside parseexec(ps,es), made a copy using q: {{%s}} and eq: {{%s}} cmd->argv[%d] is {{%s}}\n", q, eq, argc, cmd->argv[argc]);
+
     argc++;
     if(argc >= MAXARGS) {
       fprintf(stderr, "too many args\n");
@@ -376,6 +404,7 @@ struct cmd* parseexec(char **ps, char *es) {
     }
     ret = parseredirs(ret, ps, es);
   }
+
   cmd->argv[argc] = 0;
   return ret;
 }
