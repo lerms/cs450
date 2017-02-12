@@ -251,6 +251,7 @@ struct cmd *parseexec(char**, char*);
 struct cmd* parseredirs(struct cmd *, char**, char*);
 struct cmd *parseparens(char**, char *);
 struct cmd *parse_preparens(char **, char *, char *); 
+struct treecmd *parseline_tree(char **, char *);
 
 // make a copy of the characters in the input buffer, starting from s through es.
 // null-terminate the copy to make it a string.
@@ -279,7 +280,7 @@ struct cmd* parsecmd(char *s) {
 
 struct cmd *parse_preparens(char **ps, char *es, char *openparens) {
   struct cmd *preparens;
-  if (*ps != openparens) {
+  if (*ps < openparens) {
     char *pps = mkcopy(*ps, openparens);
     char *ppes = pps + strlen(pps);
     preparens = parseline(&pps, ppes);
@@ -292,16 +293,21 @@ struct cmd *parse_preparens(char **ps, char *es, char *openparens) {
 struct cmd* parseline(char **ps, char *es) {
   struct cmd *cmd;
 
+  if (*ps == es)
+  {
+    return 0;
+  }
+
   //get the first command, if its a parens, parse it, then parse the rest
   if(peek(ps, es, "(")) {
     cmd = parseparens(ps, es);
-    if(peek(ps, es, ";"))
+    if(peek(ps, es, ";")) {
       gettoken(ps, es, 0, 0);
-    cmd = listcmd(cmd, parseline(ps, es));
+      cmd = listcmd(cmd, parseline(ps, es));
+    }
     return cmd;
-  }
-  else {
-    cmd = parsepipe(ps, es); //ls
+  } else {
+    cmd = parsepipe(ps, es);
   }
 
   if (peek(ps, es, ";")) {
@@ -316,48 +322,76 @@ struct cmd* parseline(char **ps, char *es) {
 
       //parse the parens
       struct cmd *parenscmd = parseparens(ps, es);
-      gettoken(ps, es, 0, 0);
+      // gettoken(ps, es, 0, 0);
 
       //get the post parens!!
       struct cmd *postparens;
       struct cmd *secondparens;
       struct cmd *secondpreparens;
       int haspost = 0;
-      if (*ps != es) {
+      if (peek(ps, es, ";")) {
+        gettoken(ps, es, 0, 0);
         haspost = 1;
         char *second_openparens_ps;
 
         //parse the second set of parens and anything before them
         if((second_openparens_ps = strchr(*ps, '('))) {
           secondpreparens = parse_preparens(ps, es, second_openparens_ps);
-          secondparens = parseparens(&second_openparens_ps, es);
-          *ps = second_openparens_ps;
+          secondparens = parseparens(ps, es);
         }
 
-        if(*ps != es)
-          postparens = parseline(ps, es);
+        postparens = parseline(ps, es);
       }
 
+
+      //this looks horrible
       if (haspost) {
-        if(secondpreparens) {
-          if(preparens) {
-            cmd = listcmd(
+        if (secondpreparens) {
+          if (preparens) {
+            if (postparens) {
+              cmd = listcmd(
+              listcmd(parenscmd, secondparens), 
+              listcmd(cmd, 
+                listcmd(preparens, listcmd(secondpreparens, postparens))));
+            } else {
+              cmd = listcmd(
               listcmd(parenscmd, secondparens), 
               listcmd(cmd, listcmd(preparens, secondpreparens)));
+            }
+            
           } else {
-            cmd = listcmd(
+            if(postparens) {
+              cmd = listcmd(
+              listcmd(parenscmd, secondparens), 
+              listcmd(cmd, listcmd(secondpreparens, postparens)));
+            }  else {
+              cmd = listcmd(
               listcmd(parenscmd, secondparens), 
               listcmd(cmd, secondpreparens));
+            } 
           }
         } else {
           if(preparens) {
-            cmd = listcmd(
-            listcmd(parenscmd, secondparens), 
-            listcmd(cmd, preparens));
+            if (postparens){
+              cmd = listcmd(
+                listcmd(parenscmd, secondparens), 
+                listcmd(cmd, listcmd(preparens, postparens)));
+            } else {
+              cmd = listcmd(
+                listcmd(parenscmd, secondparens), 
+                listcmd(cmd, preparens));
+            }
           } else {
-            cmd = listcmd(
-            listcmd(parenscmd, secondparens), 
-            listcmd(cmd, preparens));
+
+            if (postparens)
+            {
+              cmd = listcmd(
+                listcmd(parenscmd, secondparens), 
+                listcmd(cmd, postparens));
+            } else {
+              cmd = listcmd(listcmd(parenscmd, secondparens), cmd);
+            }
+            
           }
         }
       } else if (preparens) {
@@ -380,21 +414,20 @@ struct cmd* parseparens(char **ps, char *es) {
   struct cmd *cmd;
 
   if (!peek(ps, es, "(")) {
-    printf("not a parenthesized command.");
+    printf("not a parenthesized command.\n");
   }
 
   gettoken(ps, es, 0, 0);
   cmd = parseline(ps, es);
 
   if (!peek(ps, es, ")")) {
-    printf("no closing parenthesis");
+    printf("no closing parenthesis\n");
   }
 
   gettoken(ps,es, 0, 0);
   cmd = parseredirs(cmd, ps, es);
   return cmd;
 }
-
 
 struct cmd* parsepipe(char **ps, char *es) {
   struct cmd *cmd;
@@ -464,5 +497,11 @@ struct cmd* parseexec(char **ps, char *es) {
   cmd->argv[argc] = 0;
   return ret;
 }
+
+
+
+
+
+
 
 
