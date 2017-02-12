@@ -89,7 +89,6 @@ void runcmd(struct cmd *cmd) {
       break;
 
     default:
-      printf("{{%c}} caused unkown cmd.....\n", cmd->type );
       fprintf(stderr, "unknown runcmd\n");
       exit(-1); 
   }
@@ -251,6 +250,7 @@ struct cmd *parsepipe(char**, char*);
 struct cmd *parseexec(char**, char*);
 struct cmd* parseredirs(struct cmd *, char**, char*);
 struct cmd *parseparens(char**, char *);
+struct cmd *parse_preparens(char **, char *, char *); 
 
 // make a copy of the characters in the input buffer, starting from s through es.
 // null-terminate the copy to make it a string.
@@ -276,72 +276,100 @@ struct cmd* parsecmd(char *s) {
   return cmd;
 }
 
+
+struct cmd *parse_preparens(char **ps, char *es, char *openparens) {
+  struct cmd *preparens;
+  if (*ps != openparens) {
+    char *pps = mkcopy(*ps, openparens);
+    char *ppes = pps + strlen(pps);
+    preparens = parseline(&pps, ppes);
+    *ps = openparens;
+  }
+  return preparens;
+}
+
 //i need to trim the first part of string for preparens
 struct cmd* parseline(char **ps, char *es) {
-  printf("Currently inside parseline, ps is {{%s}}, es is {{%s}}\n", *ps, es);
   struct cmd *cmd;
-  cmd = parsepipe(ps, es); //ls
+
+  //get the first command, if its a parens, parse it, then parse the rest
+  if(peek(ps, es, "(")) {
+    cmd = parseparens(ps, es);
+    if(peek(ps, es, ";"))
+      gettoken(ps, es, 0, 0);
+    cmd = listcmd(cmd, parseline(ps, es));
+    return cmd;
+  }
+  else {
+    cmd = parsepipe(ps, es); //ls
+  }
+
   if (peek(ps, es, ";")) {
     gettoken(ps, es, 0, 0);
 
     //check if any open parens exist, make sure it runs first
     char *openparens;
     if ((openparens = strchr(*ps, '('))) {
-      printf("Currently inside parseline, found openparens at {{%s}}\n", openparens);
 
-      //check if there is stuff before the open parens, THIS IS NICE
-      struct cmd *preparens;
-      if (*ps != openparens) {
-        printf("STARTING PREPARENS\n");
-        char *pps = mkcopy(*ps, openparens);
-        char *ppes = pps + strlen(pps);
-        printf("Currently inside parseline, made a preparens string {{%s}} ending at {{%c}}\n", pps, *ppes);
-        preparens = parseline(&pps, ppes);
-        *ps = openparens;
-        printf("FINISHED PREPARENS\n");
-      }
+      //check if we have stuff before the first set of parens
+      struct cmd *preparens = parse_preparens(ps, es, openparens);
 
-      // char *lastclosing = strrchr(*ps, ')');
-      // printf("Currently inside parseline, found lastclosing parens at {{%s}}, parsing parens\n", lastclosing);
-
-      // while(*openparens != ';')
-      //     openparens--;
-      // gettoken(&lastclosing, es, 0, 0);
-      printf("STARTING PARENS\n");
+      //parse the parens
       struct cmd *parenscmd = parseparens(ps, es);
-      // gettoken(ps, es, 0, 0);
+      gettoken(ps, es, 0, 0);
 
-      printf("FINISHED PARENS, ps is now {{%s}}", *ps);
       //get the post parens!!
       struct cmd *postparens;
+      struct cmd *secondparens;
+      struct cmd *secondpreparens;
+      int haspost = 0;
       if (*ps != es) {
-        printf("STARTING POSTPARENS, ps is now {{%s}}", *ps);
-        postparens = parseline(ps, es);
-        printf("FINISHED POSTPARENS, ps is now {{%s}}", *ps);
+        haspost = 1;
+        char *second_openparens_ps;
+
+        //parse the second set of parens and anything before them
+        if((second_openparens_ps = strchr(*ps, '('))) {
+          secondpreparens = parse_preparens(ps, es, second_openparens_ps);
+          secondparens = parseparens(&second_openparens_ps, es);
+          *ps = second_openparens_ps;
+        }
+
+        if(*ps != es)
+          postparens = parseline(ps, es);
       }
 
-
-
-      if (preparens && postparens) {
-        printf("BOTH WOW AND PARENS\n");
-        cmd = listcmd(parenscmd, listcmd(listcmd(cmd, preparens), postparens));
-      } else if (preparens && !postparens) {
-        printf("ONLY PREPARENS AND PARENS\n");
+      if (haspost) {
+        if(secondpreparens) {
+          if(preparens) {
+            cmd = listcmd(
+              listcmd(parenscmd, secondparens), 
+              listcmd(cmd, listcmd(preparens, secondpreparens)));
+          } else {
+            cmd = listcmd(
+              listcmd(parenscmd, secondparens), 
+              listcmd(cmd, secondpreparens));
+          }
+        } else {
+          if(preparens) {
+            cmd = listcmd(
+            listcmd(parenscmd, secondparens), 
+            listcmd(cmd, preparens));
+          } else {
+            cmd = listcmd(
+            listcmd(parenscmd, secondparens), 
+            listcmd(cmd, preparens));
+          }
+        }
+      } else if (preparens) {
         cmd = listcmd(parenscmd, listcmd(cmd, preparens));
-      } else if (postparens && !preparens) {
-        printf("ONLY POSTPARENS AND PARENS\n");
-        cmd = listcmd(parenscmd, listcmd(cmd, postparens));
       } else {
-        printf("ONLY PARENS AND CMD\n");
         cmd = listcmd(parenscmd, cmd);
       }
-  
     } 
     else {
-      printf("ONLY CMD and REGULAR PARSELINE, parsing line with ps at {{%s}}\n", *ps);
       cmd = listcmd(cmd, parseline(ps, es));
     }
-  }
+  } 
   return cmd;
 }
 
@@ -349,7 +377,6 @@ struct cmd* parseline(char **ps, char *es) {
  
 //parse everything between parens, including nested parens.
 struct cmd* parseparens(char **ps, char *es) {
-  printf("Currently inside parseparens, ps is {{%s}}, es is {{%s}}\n", *ps, es);
   struct cmd *cmd;
 
   if (!peek(ps, es, "(")) {
@@ -407,8 +434,6 @@ struct cmd* parseexec(char **ps, char *es) {
   int tok, argc;
   struct execcmd *cmd;
   struct cmd *ret;
-
-  printf("Currently inside parseexec, ps is {{%s}}, es is {{%s}}\n", *ps, es);
   
   if (peek(ps, es, "(")) {
      return parseparens(ps, es);
@@ -420,7 +445,6 @@ struct cmd* parseexec(char **ps, char *es) {
   argc = 0;
   ret = parseredirs(ret, ps, es);
   while (!peek(ps, es, "|);")) {
-    printf("Currently inside parseexec while loop, ps is {{%s}}, es is {{%s}}\n", *ps, es);
     if ((tok=gettoken(ps, es, &q, &eq)) == 0) {
       break;
     }
