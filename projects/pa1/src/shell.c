@@ -251,7 +251,6 @@ struct cmd *parseexec(char**, char*);
 struct cmd* parseredirs(struct cmd *, char**, char*);
 struct cmd *parseparens(char**, char *);
 struct cmd *parse_preparens(char **, char *, char *); 
-struct treecmd *parseline_tree(char **, char *);
 
 // make a copy of the characters in the input buffer, starting from s through es.
 // null-terminate the copy to make it a string.
@@ -293,8 +292,7 @@ struct cmd *parse_preparens(char **ps, char *es, char *openparens) {
 struct cmd* parseline(char **ps, char *es) {
   struct cmd *cmd;
 
-  if (*ps == es)
-  {
+  if (*ps == es) {
     return 0;
   }
 
@@ -322,7 +320,6 @@ struct cmd* parseline(char **ps, char *es) {
 
       //parse the parens
       struct cmd *parenscmd = parseparens(ps, es);
-      // gettoken(ps, es, 0, 0);
 
       //get the post parens!!
       struct cmd *postparens;
@@ -331,16 +328,18 @@ struct cmd* parseline(char **ps, char *es) {
       int haspost = 0;
       if (peek(ps, es, ";")) {
         gettoken(ps, es, 0, 0);
-        haspost = 1;
-        char *second_openparens_ps;
+        if(*ps < es) {
+          haspost = 1;
+          char *second_openparens_ps;
 
-        //parse the second set of parens and anything before them
-        if((second_openparens_ps = strchr(*ps, '('))) {
-          secondpreparens = parse_preparens(ps, es, second_openparens_ps);
-          secondparens = parseparens(ps, es);
+          //parse the second set of parens and anything before them
+          if((second_openparens_ps = strchr(*ps, '('))) {
+            secondpreparens = parse_preparens(ps, es, second_openparens_ps);
+            secondparens = parseparens(ps, es);
+          }
+
+          postparens = parseline(ps, es);
         }
-
-        postparens = parseline(ps, es);
       }
 
 
