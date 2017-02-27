@@ -2,3 +2,5 @@
 *.idea
 .vagrant
 submissions/
+practice/
+*.o
