@@ -1,0 +1,19 @@
+
+Hi class,
+
+Here are some clarifications of PA2.
+
+You are to count all system calls invoked during the period of time, not only the system calls related to the test process. Sorry for the ambiguity in the assignment description.
+
+You can assume the period of time within which you count the system calls to be the duration of your test program. I expect you to start counting at the beginning of your program, and end counting at the end of it. Do some random work in between so that your program doesn't end too soon.
+
+Your test program is your test case in this assignment.
+
+In order for the grading to be smooth, please describe in your documentation the steps you take to do this assignment, including the places you modified in your xv6 system.
+
+Please feel free to ask me if there is still anything unclear about the assignment.
+
+Best regards,
+
+Yi
+
