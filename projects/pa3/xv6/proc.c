@@ -491,3 +491,7 @@ int callcount(int num) {
     return proc->callcount[num];
   return 0;
 }
+
+int memcount(int num) {
+  return proc->memcount[num];
+}
