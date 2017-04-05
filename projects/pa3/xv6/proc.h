@@ -1,4 +1,5 @@
 #include "syscall.h"
+#include "mmu.h"
 // Per-CPU state
 struct cpu {
   uchar apicid;                // Local APIC ID
@@ -48,7 +49,7 @@ struct context {
 };
 
 enum procstate { UNUSED, EMBRYO, SLEEPING, RUNNABLE, RUNNING, ZOMBIE };
-enum memtype {PHYSICAL, VIRTUAL};
+
 // Per-process state
 struct proc {
   uint sz;                     // Size of process memory (bytes)

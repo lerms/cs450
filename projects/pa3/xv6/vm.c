@@ -314,6 +314,7 @@ clearpteu(pde_t *pgdir, char *uva)
   if(pte == 0)
     panic("clearpteu");
   *pte &= ~PTE_U;
+  proc->memcount[PTE_U] -= 1;
 }
 
 // Given a parent process's page table, create a copy

@@ -124,7 +124,7 @@ static int (*syscalls[])(void) = {
 [SYS_mkdir]   sys_mkdir,
 [SYS_close]   sys_close,
 [SYS_callcount] sys_callcount,
-[sys_memcount] sys_memcount,
+[SYS_memcount] sys_memcount
 };
 
 static int valid_syscall(int num) {
