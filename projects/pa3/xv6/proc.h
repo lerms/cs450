@@ -48,7 +48,7 @@ struct context {
 };
 
 enum procstate { UNUSED, EMBRYO, SLEEPING, RUNNABLE, RUNNING, ZOMBIE };
-
+enum memtype {PHYSICAL, VIRTUAL};
 // Per-process state
 struct proc {
   uint sz;                     // Size of process memory (bytes)
@@ -65,6 +65,7 @@ struct proc {
   struct inode *cwd;           // Current directory
   char name[16];               // Process name (debugging)
   int callcount[NUM_CALLS + 1]; //callcount[0] is total counts
+  int memcount[NUM_MEMTYPES + 1]; //memcount[0] is total counts
 };
 
 

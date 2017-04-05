@@ -97,3 +97,10 @@ int sys_callcount(void) {
     return -1;
   return proc->callcount[n];
 }
+
+int sys_memcount(void) {
+  int n;
+  if(argint(0, &n) < 0)
+    return -1;
+  return proc->memcount[n];
+}
