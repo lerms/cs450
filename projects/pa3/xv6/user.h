@@ -24,6 +24,7 @@ char* sbrk(int);
 int sleep(int);
 int uptime(void);
 int callcount(int); //number of times syscall N has been called
+int memcount(int); //memory allocated
 
 // ulib.c
 int stat(char*, struct stat*);
