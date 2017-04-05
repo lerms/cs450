@@ -22,3 +22,4 @@
 #define SYS_close  21
 #define SYS_callcount 22
 #define NUM_CALLS  22
+#define SYS_memcount 23
