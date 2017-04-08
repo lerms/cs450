@@ -1,5 +1,4 @@
 #include "syscall.h"
-#include "mmu.h"
 // Per-CPU state
 struct cpu {
   uchar apicid;                // Local APIC ID
@@ -66,9 +65,7 @@ struct proc {
   struct inode *cwd;           // Current directory
   char name[16];               // Process name (debugging)
   int callcount[NUM_CALLS + 1]; //callcount[0] is total counts
-  int memcount[NUM_MEMTYPES + 1]; //memcount[0] is total counts
 };
-
 
 // Process memory is laid out contiguously, low addresses first:
 //   text

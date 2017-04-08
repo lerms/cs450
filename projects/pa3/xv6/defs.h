@@ -68,6 +68,7 @@ char*           kalloc(void);
 void            kfree(char*);
 void            kinit1(void*, void*);
 void            kinit2(void*, void*);
+int 			kfreepagecount(void);
 
 // kbd.c
 void            kbdintr(void);
@@ -151,6 +152,7 @@ int             argstr(int, char**);
 int             fetchint(uint, int*);
 int             fetchstr(uint, char**);
 int 			callcount(int); //added to access number of times a system call is called
+int 			memcount(void); // added to show current memory usage of process.
 void            syscall(void);
 
 // timer.c

@@ -75,17 +75,6 @@ found:
 
   // set up counter for callcount system call
   memset(p->callcount, 0, NUM_CALLS + 1);
-
-  //set up counter for memcount system call
-  static int memcount[] = {
-    [0] 0, //total pages allocted
-    [PTE_P] (NPDENTRIES), //number of pages present for the process
-    [PTE_W] 0, //number of pages writable for the process
-    [3] 0, //empty
-    [PTE_U] 0, //number of pages available for user code
-  };
-
-  p->memcount = memcount;
   return p;
 }
 
@@ -501,8 +490,4 @@ int callcount(int num) {
   if(num > -1 && num < NUM_CALLS + 1)
     return proc->callcount[num];
   return 0;
-}
-
-int memcount(int num) {
-  return proc->memcount[num];
 }

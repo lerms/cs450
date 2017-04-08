@@ -94,3 +94,22 @@ kalloc(void)
   return (char*)r;
 }
 
+int kfreepagecount(void) {
+  struct run *r;
+  uint freepages = 0;
+
+  if(kmem.use_lock)
+    acquire(&kmem.lock);
+
+  r = kmem.freelist;
+  while(r) {
+    freepages++;
+    r = r->next;
+  }
+
+  if(kmem.use_lock)
+    release(&kmem.lock);
+
+  return freepages;
+}
+

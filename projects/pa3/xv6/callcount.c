@@ -51,7 +51,7 @@ void sys_callcount_test() {
 	printf(1, "Printing Calls Per Syscall For Work... \n");
 
 	int i;
-	for (i = 1; i < NUM_CALLS + 1; i++) {
+	for (i = 1; i < NUM_CALLS; i++) {
 		printf(1, "So far Syscall %s has been called %d times\n", syscallnames[i], callcount(i));
 	}
 
