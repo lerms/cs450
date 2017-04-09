@@ -10,7 +10,7 @@ void test(int testsize) {
 	int i;
 	for(i = 0; i < testsize; i++) {
 		struct test *x = (struct test *)malloc(sizeof(struct test));
-		x->a = (int)malloc(sizeof(int));
+		x->a = 800000;
 		memset(x->arr, 0, sizeof(x->arr));
 	}
 }
