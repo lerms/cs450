@@ -150,12 +150,6 @@ _forktest: forktest.o $(ULIB)
 	$(LD) $(LDFLAGS) -N -e main -Ttext 0 -o _forktest forktest.o ulib.o usys.o
 	$(OBJDUMP) -S _forktest > forktest.asm
 
-memcount-test:
-	gcc -Werror -Wall -o memcount memcount.c
-	for number in 1 10 20 50 100 1000 5000 10000 ; do \
-    	 ./memcount $$number ; \
-	done
-
 mkfs: mkfs.c fs.h
 	gcc -Werror -Wall -o mkfs mkfs.c
 
@@ -183,6 +177,7 @@ UPROGS=\
 	_zombie\
 	_callcount\
 	_memcount\
+	_memcounttest\
 
 
 fs.img: mkfs README $(UPROGS)
@@ -253,7 +248,7 @@ qemu-nox-gdb: fs.img xv6.img .gdbinit
 EXTRA=\
 	mkfs.c ulib.c user.h cat.c echo.c forktest.c grep.c kill.c\
 	ln.c ls.c mkdir.c rm.c stressfs.c usertests.c wc.c zombie.c\
-	printf.c umalloc.c callcount.c memcount.c\
+	printf.c umalloc.c callcount.c memcount.c memcounttest.c\
 	README dot-bochsrc *.pl toc.* runoff runoff1 runoff.list\
 	.gdbinit.tmpl gdbutil\
 
