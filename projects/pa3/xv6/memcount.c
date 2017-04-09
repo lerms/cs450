@@ -16,9 +16,11 @@ void test(int testsize) {
 }
 
 int main(int argc, char **argv) {
+	int testsize = atoi(argv[1]);
+	printf(1, "Test size: %d\n", testsize);
 	printf(1, "Initial Memory Status: \n");
 	memcount();
-	test(5);
+	test(testsize);
 	printf(1, "Final Memory Status: \n");
 	memcount();
 	exit();
