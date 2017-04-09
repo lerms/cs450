@@ -151,8 +151,9 @@ _forktest: forktest.o $(ULIB)
 	$(OBJDUMP) -S _forktest > forktest.asm
 
 memcount-test:
+	gcc -Werror -Wall -o memcount memcount.c
 	for number in 1 10 20 50 100 1000 5000 10000 ; do \
-    	 memcount $$number ; \
+    	 ./memcount $$number ; \
 	done
 
 mkfs: mkfs.c fs.h

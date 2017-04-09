@@ -18,7 +18,11 @@ void test(int testsize) {
 int main(int argc, char **argv) {
 	int testsize = atoi(argv[1]);
 	if(testsize == 0) {
+<<<<<<< HEAD
 		printf(1, "Did not enter testsize, defaulting to testsize = 10 (10 structs will be allocated)\n");
+=======
+		printf(1, "Did not enter testsize, defaulting to testsize = 10 (10 structs will be allocated) \n");
+>>>>>>> 17a0086dcfe32fabcba62f152c141909e5f214ab
 		testsize = 10;
 	}
 	printf(1, "Test size: %d\n", testsize);
