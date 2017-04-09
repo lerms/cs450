@@ -8,7 +8,7 @@ struct test {
 
 void test(int testsize) {
 	int i;
-	for(i = 0; i < 1000 * testsize; i++) {
+	for(i = 0; i < testsize; i++) {
 		struct test *x = (struct test *)malloc(sizeof(struct test));
 		x->a = (int)malloc(sizeof(int));
 		memset(x->arr, 0, sizeof(x->arr));
@@ -17,6 +17,10 @@ void test(int testsize) {
 
 int main(int argc, char **argv) {
 	int testsize = atoi(argv[1]);
+	if(testsize == 0) {
+		printf(1, "Did not enter testsize, defaulting to testsize = 10 (10 structs will be allocated)\n", );
+		testsize = 10;
+	}
 	printf(1, "Test size: %d\n", testsize);
 	printf(1, "Initial Memory Status: \n");
 	memcount();
