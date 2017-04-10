@@ -19,7 +19,7 @@ How to run the file:
 
 4. Enter make qemu to run and start qemu
 
-5. Once in qemu, input (either in terminal or qemu) memcount to run the test file. You can input a int into memcount (e.g. memcount(20)) to run more.
+5. Once in qemu, input (either in terminal or qemu) memcounttest to run the test file.
 
 _________________________________________________________________________________
 
