@@ -117,10 +117,10 @@ sys_fstat(void)
 int
 sys_link(void)
 {
-  char name[DIRSIZ], *new, *old;
+  char name[DIRSIZ], *newpath, *old;
   struct inode *dp, *ip;
 
-  if(argstr(0, &old) < 0 || argstr(1, &new) < 0)
+  if(argstr(0, &old) < 0 || argstr(1, &newpath) < 0)
     return -1;
 
   begin_op();
@@ -140,7 +140,7 @@ sys_link(void)
   iupdate(ip);
   iunlock(ip);
 
-  if((dp = nameiparent(new, name)) == 0)
+  if((dp = nameiparent(newpath, name)) == 0)
     goto bad;
   ilock(dp);
   if(dp->dev != ip->dev || dirlink(dp, name, ip->inum) < 0){
@@ -253,6 +253,9 @@ create(char *path, short type, short major, short minor)
     ilock(ip);
     if(type == T_FILE && ip->type == T_FILE)
       return ip;
+    if(type == T_SMALL_FILE && ip->type == T_SMALL_FILE) {
+      return ip;
+    }
     iunlockput(ip);
     return 0;
   }
@@ -295,13 +298,17 @@ sys_open(void)
 
   begin_op();
 
-  if(omode & O_CREATE){
-    ip = create(path, T_FILE, 0, 0);
-    if(ip == 0){
+  if(omode & O_CREATE) {
+    if(omode & O_SMALL_FILE)
+      ip = create(path, T_SMALL_FILE, 0, 0);
+    else
+      ip = create(path, T_FILE, 0, 0);
+    if(!ip) {
       end_op();
       return -1;
     }
   } else {
+
     if((ip = namei(path)) == 0){
       end_op();
       return -1;
