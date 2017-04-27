@@ -26,7 +26,7 @@ struct superblock {
 #define NDIRECT 12 //12 direct block pointers
 #define NINDIRECT (BSIZE / sizeof(uint))
 #define MAXFILE (NDIRECT + NINDIRECT)
-#define SMALLFILE_SIZE 52
+#define SMALLFILE_SIZE ((NDIRECT + 1) * sizeof(uint)) //size of the direct access data array in a smallfile inode
 
 // On-disk inode structure
 struct dinode {
