@@ -269,7 +269,7 @@ create(char *path, short type, short major, short minor)
   ip->nlink = 1;
   iupdate(ip);
 
-  if(type == T_DIR){  // Create . and .. entries.
+  if(type == T_DIR) {  // Create . and .. entries.
     dp->nlink++;  // for ".."
     iupdate(dp);
     // No ip->nlink++ for ".": avoid cyclic ref count.
@@ -340,13 +340,26 @@ sys_open(void)
 }
 
 int
-sys_mkdir(void)
-{
+sys_mkdir(void) {
   char *path;
   struct inode *ip;
 
   begin_op();
   if(argstr(0, &path) < 0 || (ip = create(path, T_DIR, 0, 0)) == 0){
+    end_op();
+    return -1;
+  }
+  iunlockput(ip);
+  end_op();
+  return 0;
+}
+
+int sys_mkSmallFileDir(void) {
+  char *path;
+  struct inode *ip;
+
+  begin_op();
+  if(argstr(0, &path) < 0 || (ip = create(path, T_SMALL_FILE, 0, 0)) == 0){
     end_op();
     return -1;
   }

@@ -25,6 +25,7 @@ int sleep(int);
 int uptime(void);
 int callcount(int); //number of times syscall N has been called
 int memcount(void); //memory allocated
+int mkSmallFileDir(char*);  //make a directory for small files
 
 // ulib.c
 int stat(char*, struct stat*);

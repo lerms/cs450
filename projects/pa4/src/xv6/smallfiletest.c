@@ -17,7 +17,6 @@ int main(void) {
     int fd, i;
     int n;
 
-
     printf(1, "Starting open and write test with test size %d\n", TEST_SIZE);
 
     //test open and write with small file set
@@ -56,4 +55,6 @@ int main(void) {
 
     printf(1, "OPEN, READ, and WRITE all pass.\n");
     exit();
+
+
 }

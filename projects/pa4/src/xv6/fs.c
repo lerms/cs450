@@ -429,7 +429,7 @@ stati(struct inode *ip, struct stat *st) {
 
 //PAGEBREAK!
 
-static int mkSmallFileDir(struct inode *ip, char *src, uint off, uint n) {
+int mkSmallFileDir(struct inode *ip, char *src, uint off, uint n) {
     uint tot, m;
     struct buf *bp;
 
@@ -477,7 +477,7 @@ static int mkSmallFileDir(struct inode *ip, char *src, uint off, uint n) {
     return n;
 }
 
-static int readSmallFileDir(struct inode *ip, char *dst, uint off, uint n) {
+int readSmallFileDir(struct inode *ip, char *dst, uint off, uint n) {
     if (off + n > SMALLFILE_SIZE)
         n = SMALLFILE_SIZE - off;
     if (ip->size <= 0)

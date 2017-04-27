@@ -22,5 +22,6 @@
 #define SYS_close  21
 #define SYS_callcount 22
 #define SYS_memcount 23
-#define NUM_CALLS  23
+#define SYS_mkSmallFileDir 24
+#define NUM_CALLS  24
 
