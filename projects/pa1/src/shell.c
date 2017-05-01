@@ -79,9 +79,11 @@ void runcmd(struct cmd *cmd) {
         runcmd(listcmd->left);
       }
       wait(NULL);
-      runcmd(listcmd->right);
+      if(fork1() == 0) {
+        runcmd(listcmd->right);
+      }
+      wait(NULL);
       break;
-
     case '|':
       pcmd = (struct pipecmd*)cmd;
       fprintf(stderr, "pipe not implemented\n");

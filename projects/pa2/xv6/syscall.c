@@ -129,14 +129,15 @@ static int valid_syscall(int num) {
   return (num > 0 && num < NELEM(syscalls) && syscalls[num]);
 }
 
+
 void
 syscall(void)
 {
   int num;
   num = proc->tf->eax;
   if (valid_syscall(num)) {
-    proc->callcount[num] += 1;
     proc->callcount[0] += 1;
+    proc->callcount[num] += 1;
     proc->tf->eax = syscalls[num]();
   } else {
     cprintf("%d %s: unknown sys call %d\n",

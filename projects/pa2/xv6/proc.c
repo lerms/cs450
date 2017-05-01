@@ -73,8 +73,7 @@ found:
   memset(p->context, 0, sizeof *p->context);
   p->context->eip = (uint)forkret;
 
-  memset(p->callcount, 0, NUM_CALLS + 1);
-
+  memset(p->callcount, 0, sizeof(uint) * (NUM_CALLS + 1));
   return p;
 }
 

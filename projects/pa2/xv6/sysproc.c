@@ -6,6 +6,7 @@
 #include "memlayout.h"
 #include "mmu.h"
 #include "proc.h"
+#include "syscall.h"
 
 int
 sys_fork(void)
@@ -90,10 +91,15 @@ sys_uptime(void)
   return xticks;
 }
 
+
 int sys_callcount(void) {
   cprintf("Alexander_Lerma_A20315236\n");
   int n;
   if(argint(0, &n) < 0)
     return -1;
+  if(n == -1) {
+    memset(proc->callcount, 0, sizeof(uint) * (NUM_CALLS + 1));
+    return 0;
+  }
   return proc->callcount[n];
 }

@@ -34,6 +34,7 @@ int fibs(int n) {
 }
 
 void sys_callcount_test() {
+	callcount(-1);
 	printf(1, "Initial Total System Calls: %d\n", callcount(0));
 	printf(1, "Testing callcount...\n");
 	printf(1, "\nWoah\n\n");
